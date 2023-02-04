@@ -17,7 +17,7 @@ This dashboard displays the real-time position of any bus, tram, or train (ATAC 
 Public transport data from [Roma Mobilità](https://romamobilita.it/it/tecnologie):
 - GTFS-RT feed: [Vehicle Positions](https://romamobilita.it/sites/default/files/rome_rtgtfs_vehicle_positions_feed.pb)
 
-Administrative data from [ISTAT (2022)](https://www.istat.it/it/archivio/222527)
+Administrative boundaries from [ISTAT (2022)](https://www.istat.it/it/archivio/222527)
 
 ### References
 
