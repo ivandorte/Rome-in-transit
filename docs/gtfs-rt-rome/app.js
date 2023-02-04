@@ -171,9 +171,9 @@ map_elem = tiles * admin_bounds * points
 update_dashboard()
 
 # Define a PeriodicCallback that updates every 10 seconds with data retrieved from Roma mobilità GTFS-RT feed
-callback = pn.io.PeriodicCallback(callback=update_dashboard, period=10000)
-callback.start()
-
+callback = pn.state.add_periodic_callback(
+    callback=update_dashboard, period=10000
+)
 
 # Compose the main layout
 layout = pn.Row(
