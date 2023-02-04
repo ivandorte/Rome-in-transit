@@ -35,6 +35,8 @@ Administrative boundaries from [ISTAT (2022)](https://www.istat.it/it/archivio/2
 
 - https://github.com/Ileriayo/markdown-badges
 
+- Dashboard logo from [Material Symbols - Google](https://fonts.google.com/icons)
+
 ### Authors
 
 - Ivan D'Ortenzio
