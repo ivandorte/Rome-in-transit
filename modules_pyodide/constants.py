@@ -7,10 +7,10 @@ STOPPED_CL = "#CC3311"
 CORS_GTFS_RT_FEED = "https://corsproxy.io/?https://romamobilita.it/sites/default/files/rome_rtgtfs_vehicle_positions_feed.pb"
 
 # Administrative boundaries of Rome - ISTAT (2022)
-ADMIN_BOUNDS = "https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/data/RomeAdmin.geojson"
+ADMIN_BOUNDS = "https://raw.githubusercontent.com/ivandorte/test_/main/data/RomeAdmin.geojson"
 
 # CSS that align the text inside the Number indicator: shorturl.at/BNP23
-CSS = """
+CSS_NUMIND = """
     .bk .center_number :first-child{
     color: white !important;
     display: flex !important;

@@ -1,6 +1,8 @@
 from datetime import datetime as dt
 
 import pandas as pd
+
+# import requests
 from constants import CORS_GTFS_RT_FEED, IN_TRANSIT_CL, STOPPED_CL
 from google.transit import gtfs_realtime_pb2
 from js import XMLHttpRequest
@@ -54,10 +56,10 @@ def build_url():
     return url
 
 
-def read_feed():
+def read_feed_xhr():
     """
     HTTP request used to retrieve binary data from
-    Roma mobilità GTFS-RT feed.
+    Roma mobilità GTFS-RT feed (XHR).
     """
 
     url = build_url()
@@ -67,7 +69,10 @@ def read_feed():
     xhr.overrideMimeType("text/plain; charset=x-user-defined")
     xhr.responseIsBinary = True
     xhr.send(None)
-    return bytes(ord(byte) & 0xFF for byte in xhr.response)
+
+    response = xhr.response
+
+    return bytes(ord(byte) & 0xFF for byte in response)
 
 
 def get_data():
@@ -79,7 +84,9 @@ def get_data():
     feed = gtfs_realtime_pb2.FeedMessage()
 
     try:
-        response = read_feed()
+        # url = build_url()
+        # response = requests.get(url).content
+        response = read_feed_xhr()
         feed.ParseFromString(response)
     except Exception as e:
         # We return an empty DataFrame
