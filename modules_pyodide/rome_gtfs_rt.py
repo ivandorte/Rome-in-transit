@@ -60,6 +60,7 @@ def read_feed_xhr():
     """
     HTTP request used to retrieve binary data from
     Roma mobilità GTFS-RT feed (XHR).
+    Adapted from: https://bartbroere.eu/2022/04/25/pyodide-requests-binary-works-update/
     """
 
     url = build_url()
