@@ -1,0 +1,13 @@
+numpy<1.24
+matplotlib
+packaging
+pandas
+bokeh
+holoviews
+panel==1.1.0
+requests
+lxml
+beautifulsoup4
+pyproj
+protobuf
+gtfs-realtime-bindings
