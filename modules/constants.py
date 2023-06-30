@@ -1,23 +1,22 @@
 # Custom colors
 HEADER_CL = "#2F4F4F"
-IN_TRANSIT_CL = "#0077BB"
-STOPPED_CL = "#CC3311"
 
-# Roma mobilità GTFS-RT vehicle positions feed
-CORS_GTFS_RT_FEED = "https://corsproxy.io/?https://romamobilita.it/sites/default/files/rome_rtgtfs_vehicle_positions_feed.pb"
+# Vehicle status colors
+IN_TRANSIT_CL = "#0077BB"
+STOPPED_CL = "#EE7733"
+
+# Delay class colors
+ON_TIME_CL = "#009988"
+LATE_CL = "#CC3311"
+
+# Roma mobilità - GTFS-RT vehicle positions feed
+CORS_GTFS_VEHICLE_POS = "https://corsproxy.io/?https://romamobilita.it/sites/default/files/rome_rtgtfs_vehicle_positions_feed.pb"
+
+# Roma mobilità - GTFS-RT trip_updates
+CORS_GTFS_TRIP_UPDATES = "https://corsproxy.io/?https://romamobilita.it/sites/default/files/rome_rtgtfs_trip_updates_feed.pb"
 
 # Administrative boundaries of Rome - ISTAT (2022)
 ADMIN_BOUNDS = "https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/data/RomeAdmin.geojson"
-
-# CSS that align the text inside the Number indicator: shorturl.at/BNP23
-CSS_NUMIND = """
-    .bk .center_number :first-child{
-    color: white !important;
-    display: flex !important;
-    flex-direction: column;
-    align-items:center;
-    }
-    """
 
 # Dashboard description
 DASH_DESC = f"""

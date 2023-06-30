@@ -1,34 +1,30 @@
-import json
 from datetime import datetime as dt
 
 import holoviews as hv
 import numpy as np
 import panel as pn
+import requests
 from bokeh.models import HoverTool
-from constants import (
+from holoviews.streams import Pipe
+from modules.constants import (
     ADMIN_BOUNDS,
-    CSS_NUMIND,
     DASH_DESC,
     HEADER_CL,
     IN_TRANSIT_CL,
+    LATE_CL,
+    ON_TIME_CL,
     STOPPED_CL,
 )
-from holoviews.streams import Pipe
-from pyodide.http import open_url
-from rome_gtfs_rt import DF_SCHEMA, get_data
+from modules.rome_gtfs_rt import FULL_DF_SCHEMA, get_data
 
-# import requests
+# sys.path.insert(1, "/code")
+
 
 # Load the bokeh extension
 hv.extension("bokeh")
 
-# Load Panel extensions
-pn.extension()
-
 # Set the sizing mode
 pn.config.sizing_mode = "stretch_both"
-
-pn.config.raw_css.append(CSS_NUMIND)
 
 
 def get_current_time():
@@ -38,33 +34,49 @@ def get_current_time():
     return dt.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def init_stream_layer():
+def init_stream_layers():
     """
     This function initialize the GTFS-RT Stream Layer
     """
 
     gtfs_hover = HoverTool(
         tooltips=[
-            ("vehicle ID", "@vehicleID"),
-            ("Label", "@label"),
+            ("Vehicle ID", "@vehicleID"),
+            ("Trip ID", "@tripID"),
             ("Start Time", "@startTime"),
             ("Last Update", "@lastUpdate"),
+            ("Delay (min)", "@delay"),
+            ("Delay Class", "@delayClass"),
+            ("Vehicle Status", "@currentStatusClass"),
         ]
     )
 
-    points = hv.DynamicMap(hv.Points, streams=[pipe])
-    points.opts(
-        frame_width=500,
-        frame_height=500,
+    status_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    status_points.opts(
+        frame_width=600,
+        frame_height=650,
         xaxis=None,
         yaxis=None,
-        color="pointColor",
+        color="statusColor",
         line_alpha=0.0,
         fill_alpha=0.6,
-        size=4,
+        size=6,
         tools=[gtfs_hover],
     )
-    return points
+
+    delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    delay_points.opts(
+        frame_width=600,
+        frame_height=650,
+        xaxis=None,
+        yaxis=None,
+        color="delayColor",
+        line_alpha=0.0,
+        fill_alpha=0.6,
+        size=6,
+        tools=[gtfs_hover],
+    )
+    return status_points, delay_points
 
 
 def get_admin_bounds():
@@ -73,9 +85,7 @@ def get_admin_bounds():
     of Rome.
     """
 
-    # admin_geojson = requests.get(ADMIN_BOUNDS).json()
-    response = open_url(ADMIN_BOUNDS)
-    admin_geojson = json.loads(response.getvalue())
+    admin_geojson = requests.get(ADMIN_BOUNDS).json()
 
     paths = hv.Path([])
     for fc in admin_geojson["features"][0]["geometry"]["coordinates"]:
@@ -98,37 +108,50 @@ def update_dashboard():
         fleet_numind.value = in_transit_numind.value + stopped_numind.value
         last_update.value = get_current_time()
 
+        on_time_numind.value = data["delayClass"].isin(["On time"]).sum(axis=0)
+        late_numind.value = data["delayClass"].isin(["Late"]).sum(axis=0)
+
 
 # Dashboard description HTML pane
 desc_pane = pn.pane.HTML(
     DASH_DESC,
-    style={"text-align": "justified"},
+    styles={"text-align": "justified"},
     sizing_mode="stretch_width",
 )
 
 # Latest update widget
 last_update = pn.widgets.StaticText(name="Latest Update")
 
-# Number indicator - In transit vehicles
+# In transit vehicles
 in_transit_numind = pn.indicators.Number(
     value=0,
     name="In Transit",
+    title_size="18pt",
+    font_size="40pt",
     default_color="white",
-    align="center",
-    background=IN_TRANSIT_CL,
+    styles={"background": IN_TRANSIT_CL, "opacity": "0.6"},
     sizing_mode="stretch_width",
-    css_classes=["center_number"],
 )
 
-# Number indicator - Stopped vehicles
-stopped_numind = in_transit_numind.clone(name="Stopped", background=STOPPED_CL)
+# Stopped vehicles
+stopped_numind = in_transit_numind.clone(
+    name="Stopped", styles={"background": STOPPED_CL}
+)
 
-# Number indicator - Vehicle fleet (In transit + stopped)
-fleet_numind = in_transit_numind.clone(name="Fleet", background=HEADER_CL)
+# Vehicle fleet (In transit + stopped)
+fleet_numind = in_transit_numind.clone(name="Fleet", styles={"background": HEADER_CL})
+
+# On time vehicles
+on_time_numind = in_transit_numind.clone(
+    name="On Time", styles={"background": ON_TIME_CL}
+)
+
+# Late vehicles
+late_numind = in_transit_numind.clone(name="Late", styles={"background": LATE_CL})
 
 # Inizialize the Stream Layer
-pipe = Pipe(DF_SCHEMA)
-points = init_stream_layer()
+pipe = Pipe(FULL_DF_SCHEMA)
+status_points, delay_points = init_stream_layers()
 
 # Administrative boundaries of Rome
 admin_bounds = get_admin_bounds()
@@ -137,26 +160,32 @@ admin_bounds = get_admin_bounds()
 tiles = hv.element.tiles.CartoLight()
 
 # Main map view
-map_elem = tiles * admin_bounds * points
+status_map = tiles * admin_bounds * status_points
+delay_map = tiles * admin_bounds * delay_points
 
 # Initialize the map view
 update_dashboard()
 
 # Define a PeriodicCallback that updates every 10 seconds with data retrieved from Roma mobilità GTFS-RT feed
-callback = pn.state.add_periodic_callback(
-    callback=update_dashboard, period=10000
-)
+callback = pn.state.add_periodic_callback(callback=update_dashboard, period=10000)
+
+status_indicators = pn.Row(in_transit_numind, stopped_numind, fleet_numind)
+delay_indicators = pn.Row(on_time_numind, late_numind)
 
 # Compose the main layout
 layout = pn.Row(
     pn.Column(
         desc_pane,
-        pn.Row(in_transit_numind, stopped_numind),
-        fleet_numind,
+        status_indicators,
+        pn.Spacer(height=25),
+        delay_indicators,
         last_update,
         width=400,
     ),
-    map_elem,
+    pn.Tabs(
+        ("Vehicle Status", status_map),
+        ("Delays", delay_map),
+    ),
 )
 
 # Turn into a deployable application
@@ -167,6 +196,6 @@ pn.template.FastListTemplate(
     theme="default",
     theme_toggle=False,
     header_background=HEADER_CL,
+    main_max_width="1100px",
     main=[layout],
-    main_max_width="1000px",
 ).servable()

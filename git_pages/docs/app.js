@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.3/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.3/dist/wheels/panel-0.14.3-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/packages_pyodide/gtfs_realtime_bindings-0.0.7-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/packages_pyodide/protobuf-4.21.12-py3-none-any.whl', 'pyodide-http==0.1.0', 'holoviews>=1.15.4', 'numpy', 'pandas', 'pyproj']
+  const env_spec = ['markdown-it-py<3', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/git_pages/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/git_pages/wheels/protobuf-4.23.3-py3-none-any.whl', 'holoviews>=1.15.4']
   for (const pkg of env_spec) {
     let pkg_name;
     if (pkg.endsWith('.whl')) {
@@ -37,9 +37,9 @@ async function startApplication() {
       });
     }
   }
-
+  
   // Load custom Python modules
-  const custom_modules = ['https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/constants.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/rome_gtfs_rt.py']
+  const custom_modules = ['https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/git_pages/modules/constants.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/git_pages/modules/rome_gtfs_rt.py']
   for (const module of custom_modules) {
     let module_name;
     module_name = module.split('/').slice(-1)[0]
@@ -50,7 +50,7 @@ async function startApplication() {
             f.write(await module_pyodide.bytes())
       `);
   }
-
+  
   console.log("Packages loaded!");
   self.postMessage({type: 'status', msg: 'Executing code'})
   const code = `
@@ -61,36 +61,33 @@ from panel.io.pyodide import init_doc, write_doc
 
 init_doc()
 
-import json
 from datetime import datetime as dt
 
 import holoviews as hv
 import numpy as np
 import panel as pn
-import requests
 from bokeh.models import HoverTool
 from holoviews.streams import Pipe
 from constants import (
     ADMIN_BOUNDS,
-    CSS_NUMIND,
     DASH_DESC,
     HEADER_CL,
     IN_TRANSIT_CL,
+    LATE_CL,
+    ON_TIME_CL,
     STOPPED_CL,
 )
 from pyodide.http import open_url
-from rome_gtfs_rt import DF_SCHEMA, get_data
+from modules.rome_gtfs_rt import FULL_DF_SCHEMA, get_data
+
+# sys.path.insert(1, "/code")
+
 
 # Load the bokeh extension
 hv.extension("bokeh")
 
-# Load Panel extensions
-pn.extension()
-
 # Set the sizing mode
 pn.config.sizing_mode = "stretch_both"
-
-pn.config.raw_css.append(CSS_NUMIND)
 
 
 def get_current_time():
@@ -100,33 +97,49 @@ def get_current_time():
     return dt.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
-def init_stream_layer():
+def init_stream_layers():
     """
     This function initialize the GTFS-RT Stream Layer
     """
 
     gtfs_hover = HoverTool(
         tooltips=[
-            ("vehicle ID", "@vehicleID"),
-            ("Label", "@label"),
+            ("Vehicle ID", "@vehicleID"),
+            ("Trip ID", "@tripID"),
             ("Start Time", "@startTime"),
             ("Last Update", "@lastUpdate"),
+            ("Delay (min)", "@delay"),
+            ("Delay Class", "@delayClass"),
+            ("Vehicle Status", "@currentStatusClass"),
         ]
     )
 
-    points = hv.DynamicMap(hv.Points, streams=[pipe])
-    points.opts(
-        frame_width=500,
-        frame_height=500,
+    status_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    status_points.opts(
+        frame_width=600,
+        frame_height=650,
         xaxis=None,
         yaxis=None,
-        color="pointColor",
+        color="statusColor",
         line_alpha=0.0,
         fill_alpha=0.6,
-        size=4,
+        size=6,
         tools=[gtfs_hover],
     )
-    return points
+
+    delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    delay_points.opts(
+        frame_width=600,
+        frame_height=650,
+        xaxis=None,
+        yaxis=None,
+        color="delayColor",
+        line_alpha=0.0,
+        fill_alpha=0.6,
+        size=6,
+        tools=[gtfs_hover],
+    )
+    return status_points, delay_points
 
 
 def get_admin_bounds():
@@ -159,37 +172,50 @@ def update_dashboard():
         fleet_numind.value = in_transit_numind.value + stopped_numind.value
         last_update.value = get_current_time()
 
+        on_time_numind.value = data["delayClass"].isin(["On time"]).sum(axis=0)
+        late_numind.value = data["delayClass"].isin(["Late"]).sum(axis=0)
+
 
 # Dashboard description HTML pane
 desc_pane = pn.pane.HTML(
     DASH_DESC,
-    style={"text-align": "justified"},
+    styles={"text-align": "justified"},
     sizing_mode="stretch_width",
 )
 
 # Latest update widget
 last_update = pn.widgets.StaticText(name="Latest Update")
 
-# Number indicator - In transit vehicles
+# In transit vehicles
 in_transit_numind = pn.indicators.Number(
     value=0,
     name="In Transit",
+    title_size="18pt",
+    font_size="40pt",
     default_color="white",
-    align="center",
-    background=IN_TRANSIT_CL,
+    styles={"background": IN_TRANSIT_CL, "opacity": "0.6"},
     sizing_mode="stretch_width",
-    css_classes=["center_number"],
 )
 
-# Number indicator - Stopped vehicles
-stopped_numind = in_transit_numind.clone(name="Stopped", background=STOPPED_CL)
+# Stopped vehicles
+stopped_numind = in_transit_numind.clone(
+    name="Stopped", styles={"background": STOPPED_CL}
+)
 
-# Number indicator - Vehicle fleet (In transit + stopped)
-fleet_numind = in_transit_numind.clone(name="Fleet", background=HEADER_CL)
+# Vehicle fleet (In transit + stopped)
+fleet_numind = in_transit_numind.clone(name="Fleet", styles={"background": HEADER_CL})
+
+# On time vehicles
+on_time_numind = in_transit_numind.clone(
+    name="On Time", styles={"background": ON_TIME_CL}
+)
+
+# Late vehicles
+late_numind = in_transit_numind.clone(name="Late", styles={"background": LATE_CL})
 
 # Inizialize the Stream Layer
-pipe = Pipe(DF_SCHEMA)
-points = init_stream_layer()
+pipe = Pipe(FULL_DF_SCHEMA)
+status_points, delay_points = init_stream_layers()
 
 # Administrative boundaries of Rome
 admin_bounds = get_admin_bounds()
@@ -198,26 +224,32 @@ admin_bounds = get_admin_bounds()
 tiles = hv.element.tiles.CartoLight()
 
 # Main map view
-map_elem = tiles * admin_bounds * points
+status_map = tiles * admin_bounds * status_points
+delay_map = tiles * admin_bounds * delay_points
 
 # Initialize the map view
 update_dashboard()
 
 # Define a PeriodicCallback that updates every 10 seconds with data retrieved from Roma mobilità GTFS-RT feed
-callback = pn.state.add_periodic_callback(
-    callback=update_dashboard, period=10000
-)
+callback = pn.state.add_periodic_callback(callback=update_dashboard, period=10000)
+
+status_indicators = pn.Row(in_transit_numind, stopped_numind, fleet_numind)
+delay_indicators = pn.Row(on_time_numind, late_numind)
 
 # Compose the main layout
 layout = pn.Row(
     pn.Column(
         desc_pane,
-        pn.Row(in_transit_numind, stopped_numind),
-        fleet_numind,
+        status_indicators,
+        pn.Spacer(height=25),
+        delay_indicators,
         last_update,
         width=400,
     ),
-    map_elem,
+    pn.Tabs(
+        ("Vehicle Status", status_map),
+        ("Delays", delay_map),
+    ),
 )
 
 # Turn into a deployable application
@@ -228,8 +260,8 @@ pn.template.FastListTemplate(
     theme="default",
     theme_toggle=False,
     header_background=HEADER_CL,
+    main_max_width="1100px",
     main=[layout],
-    main_max_width="1000px",
 ).servable()
 
 
@@ -265,19 +297,19 @@ self.onmessage = async (event) => {
     _link_docs_worker(state.curdoc, sendPatch, setter='js')
     `)
   } else if (msg.type === 'patch') {
+    self.pyodide.globals.set('patch', msg.patch)
     self.pyodide.runPythonAsync(`
-    import json
-
-    state.curdoc.apply_json_patch(json.loads('${msg.patch}'), setter='js')
+    state.curdoc.apply_json_patch(patch.to_py(), setter='js')
     `)
     self.postMessage({type: 'idle'})
   } else if (msg.type === 'location') {
+    self.pyodide.globals.set('location', msg.location)
     self.pyodide.runPythonAsync(`
     import json
     from panel.io.state import state
     from panel.util import edit_readonly
     if state.location:
-        loc_data = json.loads("""${msg.location}""")
+        loc_data = json.loads(location)
         with edit_readonly(state.location):
             state.location.param.update({
                 k: v for k, v in loc_data.items() if k in state.location.param
