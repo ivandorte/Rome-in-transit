@@ -9,8 +9,8 @@
 This dashboard displays the real-time position of any bus, tram, or train (ATAC and Roma TPL operators) within the Metropolitan City of Rome Capital.
 
 ## Deployed on
-
-- GitHub Pages: https://ivandorte.github.io/Rome-in-transit/gtfs-rt-rome/app.html
+- HF: https://huggingface.co/spaces/ivn888/Rome-in-transit
+- GitHub Pages: -
 
 ## Data 
 
