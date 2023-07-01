@@ -14,9 +14,9 @@ Two stream layers (maps):
 
 - Vehicle status: shows the current status of the vehicle (in transit or stopped):
 
-- Delays: displays whether a vehicle is On time (ahead + on time) or behind schedule (late):
+- Delays: displays whether a vehicle is on time (ahead + on time) or behind schedule (late):
 
-n.b: In the hover tool the value of the delay field (in minutes) will be zero if the vehicle is on time, negative if ahead of schedule or positive if late.
+n.b: In the hover tool the value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
 
 ![img](https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/assets/delay.png)
 
@@ -37,15 +37,17 @@ Five number indicators showing:
 
 ## What I've done to deploy this application on GitHub pages
 
-- Loaded custom Python modules from GitHub;
+Loaded custom Python modules from GitHub:
 
 https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc20993c9cde8e2d/docs/gtfs-rt-rome/app.js#L40-L53
 
-- Loaded [protobuf](https://pypi.org/project/protobuf/) and [gtfs-realtime-bindings](https://pypi.org/project/gtfs-realtime-bindings/) wheels (not available on pyodide) from a [CDN URL](https://cdn.jsdelivr.net);
+Loaded protobuf and gtfs-realtime-bindings wheels from a [CDN URL](https://cdn.jsdelivr.net):
 
-> **protobuf** wheel is available on pypi: https://pypi.org/project/protobuf/#files
+- protobuf wheel is available on pypi: https://pypi.org/project/protobuf/#files
 
-> **gtfs-realtime-bindings** wheel (https://pypi.org/project/gtfs-realtime-bindings/#files) compiled via: `python setup.py bdist_wheel`
+- gtfs-realtime-bindings wheel (https://pypi.org/project/gtfs-realtime-bindings/#files) compiled via: `python setup.py bdist_wheel`
+
+How I solved CORS problem:
 
 - Used [corsproxy.io](https://corsproxy.io/) to bypass CORS errors on HTTP requests;
 
