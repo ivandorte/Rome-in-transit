@@ -23,11 +23,23 @@ n.b: In the hover tool the value of the delay field (in minutes) will be zero if
 Five number indicators showing:
 
 - The number of currently active vehicles, divided between Stopped or In transit;
+
 - The number of vehicles on time or behind schedule (late);
 
 ## Deployed on
-- HF: https://huggingface.co/spaces/ivn888/Rome-in-transit
-- GitHub Pages: -
+
+HF: https://huggingface.co/spaces/ivn888/Rome-in-transit
+
+GitHub Pages:  the app is currently broken
+
+- :x: Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'endsWith') at startApplication (app.js:21:13)
+startApplication @ app.js:21
+
+Know problems:
+
+- If you receive a blank page restart the HF Space;
+
+- The peridic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
 
 ## Data 
 
@@ -88,4 +100,5 @@ https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc2099
 - Ivan D'Ortenzio
 
 [![Twitter](https://img.shields.io/badge/Twitter-%231DA1F2.svg?style=for-the-badge&logo=Twitter&logoColor=white)](https://twitter.com/ivanziogeo)
+
 [![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ivan-d-ortenzio/)
