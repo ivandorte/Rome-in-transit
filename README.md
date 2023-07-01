@@ -12,32 +12,33 @@ This dashboard displays the near real-time position of any bus, tram, or train (
 
 Two stream layers (maps):
 
-- Vehicle status: shows the current status of the vehicle (in transit or stopped):
+1. The "Vehicle status" map shows, as the name implies, the current status of the vehicle:
+   - In transit `#0077BB`
+   - Stopped `#EE7733`
 
-- Delays: displays whether a vehicle is on time (ahead + on time) or behind schedule (late):
+2. The "Delays map" displays whether a vehicle is on time (ahead + on time) or behind schedule (late):
+   - On time `#009988`
+   - Late `#CC3311`
 
-n.b: In the hover tool the value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
+N.B.: In the hover tooltip the value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
 
 ![img](https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/assets/delay.png)
 
 Five number indicators showing:
 
-- The number of currently active vehicles, divided between Stopped or In transit;
+- The number of currently active vehicles (fleet) divided between in transit or stopped;
 
-- The number of vehicles on time or behind schedule (late);
+- The number of vehicles on time or behind schedule;
 
 ## Deployed on
 
 HF: https://huggingface.co/spaces/ivn888/Rome-in-transit
 
-GitHub Pages:  the app is currently broken
+GitHub Pages: https://ivandorte.github.io/Rome-in-transit/gtfs-rt/app.html
 
-- :x: Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'endsWith') at startApplication (app.js:21:13)
-startApplication @ app.js:21
+Known problems:
 
-Know problems:
-
-- If you receive a blank page restart the HF Space;
+- If you view a blank page in HF restart the Space;
 
 - The peridic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
 
@@ -47,25 +48,29 @@ Know problems:
 
 - Administrative boundaries from [ISTAT (2022)](https://www.istat.it/it/archivio/222527);
 
-## What I've done to deploy this application on GitHub pages
+## Deployment on GitHub pages
 
-Loaded custom Python modules from GitHub:
+1. Loaded my custom Python modules from GitHub:
 
 https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc20993c9cde8e2d/docs/gtfs-rt-rome/app.js#L40-L53
 
-Loaded protobuf and gtfs-realtime-bindings wheels from a [CDN URL](https://cdn.jsdelivr.net):
+2. Loaded protobuf and gtfs-realtime-bindings wheels from a [CDN URL](https://cdn.jsdelivr.net):
 
-- protobuf wheel is available on pypi: https://pypi.org/project/protobuf/#files
+   - protobuf is available on pypi: https://pypi.org/project/protobuf/#files
 
-- gtfs-realtime-bindings wheel (https://pypi.org/project/gtfs-realtime-bindings/#files) compiled via: `python setup.py bdist_wheel`
+   - gtfs-realtime-bindings (https://pypi.org/project/gtfs-realtime-bindings/#files) was compiled via: `python setup.py bdist_wheel`
 
-How I solved CORS problem:
+3. How I partially solved the CORS problem?
 
-- Used [corsproxy.io](https://corsproxy.io/) to bypass CORS errors on HTTP requests;
+   - Used [corsproxy.io](https://corsproxy.io/) to bypass CORS errors on HTTP requests;
 
-- Used XMLHttpRequest (js) to make HTTP requests of binary data;
+   - Used XMLHttpRequest (js) to make HTTP requests of binary data;
 
 https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc20993c9cde8e2d/modules_pyodide/rome_gtfs_rt.py#L58-L76
+
+## Deployment on HF
+
+Just read this [Medium article](https://towardsdatascience.com/how-to-deploy-a-panel-app-to-hugging-face-using-docker-6189e3789718) written by Sophia Yang, Ph.D.
 
 ## References
 
@@ -78,6 +83,10 @@ https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc2099
 - https://pyodide.org/en/stable/
 
 - https://pyodide.org/en/stable/usage/loading-custom-python-code.html
+
+- https://towardsdatascience.com/how-to-deploy-a-panel-app-to-hugging-face-using-docker-6189e3789718
+
+- https://panel.holoviz.org/how_to/wasm/convert.html
 
 - https://corsproxy.io/
 

@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js");
+importScripts("https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js");
 
 function sendPatch(patch, buffers, msg_id) {
   self.postMessage({
@@ -15,8 +15,9 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', , 'holoviews>=1.15.4', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/protobuf-4.23.3-py3-none-any.whl']
+  const env_spec = ['markdown-it-py<3', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', 'holoviews>=1.15.4', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/protobuf-4.23.3-py3-none-any.whl']
   for (const pkg of env_spec) {
+    console.log(pkg);
     let pkg_name;
     if (pkg.endsWith('.whl')) {
       pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
@@ -37,7 +38,7 @@ async function startApplication() {
       });
     }
   }
-  
+
   // Load custom Python modules
   const custom_modules = ['https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/constants.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/rome_gtfs_rt.py']
   for (const module of custom_modules) {
@@ -63,6 +64,7 @@ init_doc()
 
 from datetime import datetime as dt
 
+import json
 import holoviews as hv
 import numpy as np
 import panel as pn
@@ -78,7 +80,7 @@ from constants import (
     STOPPED_CL,
 )
 from pyodide.http import open_url
-from modules.rome_gtfs_rt import FULL_DF_SCHEMA, get_data
+from rome_gtfs_rt import FULL_DF_SCHEMA, get_data
 
 # Load the bokeh extension
 hv.extension("bokeh")
