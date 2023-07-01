@@ -13,12 +13,12 @@ This dashboard displays the near real-time position of any bus, tram, or train (
 Two stream layers (maps):
 
 1. The "Vehicle status" map shows, as the name implies, the current status of the vehicle:
-   - In transit `#0077BB`
-   - Stopped `#EE7733`
+   - $\textcolor{#0077BB}{\rm \textbf{In\ transit}}$ 
+   - $\textcolor{#EE7733}{\rm \textbf{Stopped}}$
 
 2. The "Delays map" displays whether a vehicle is on time (ahead + on time) or behind schedule (late):
-   - On time `#009988`
-   - Late `#CC3311`
+   - $\textcolor{#009988}{\rm \textbf{On\ time}}$
+   - $\textcolor{#CC3311}{\rm \textbf{Late}}$
 
 N.B.: In the hover tooltip the value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
 
