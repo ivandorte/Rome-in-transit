@@ -17,9 +17,6 @@ from modules.constants import (
 )
 from modules.rome_gtfs_rt import FULL_DF_SCHEMA, get_data
 
-# sys.path.insert(1, "/code")
-
-
 # Load the bokeh extension
 hv.extension("bokeh")
 
@@ -36,7 +33,7 @@ def get_current_time():
 
 def init_stream_layers():
     """
-    This function initialize the GTFS-RT Stream Layer
+    This function initialize the GTFS-RT Stream Layers
     """
 
     gtfs_hover = HoverTool(
@@ -97,12 +94,13 @@ def get_admin_bounds():
 
 def update_dashboard():
     """
-    This function updates the Stream Layer and the widgets
+    This function updates the Stream Layers and the number widgets
     """
 
     data = get_data()
     if len(data):
         pipe.send(data)
+
         in_transit_numind.value = data["currentStatus"].isin([2]).sum(axis=0)
         stopped_numind.value = data["currentStatus"].isin([1]).sum(axis=0)
         fleet_numind.value = in_transit_numind.value + stopped_numind.value
@@ -166,7 +164,7 @@ delay_map = tiles * admin_bounds * delay_points
 # Initialize the map view
 update_dashboard()
 
-# Define a PeriodicCallback that updates every 10 seconds with data retrieved from Roma mobilità GTFS-RT feed
+# Define a PeriodicCallback that updates the stream layers and the number widgets every 10 seconds
 callback = pn.state.add_periodic_callback(callback=update_dashboard, period=10000)
 
 status_indicators = pn.Row(in_transit_numind, stopped_numind, fleet_numind)

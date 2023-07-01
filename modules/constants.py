@@ -23,7 +23,7 @@ DASH_DESC = f"""
     <div>
         <hr />
         <p>
-            This dashboard displays the real-time position of any bus, tram,
+            This dashboard displays the near real-time position of any bus, tram,
             or train (ATAC and Roma TPL operators) within the Metropolitan
             City of Rome Capital.
         </p>

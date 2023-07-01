@@ -80,9 +80,6 @@ from constants import (
 from pyodide.http import open_url
 from modules.rome_gtfs_rt import FULL_DF_SCHEMA, get_data
 
-# sys.path.insert(1, "/code")
-
-
 # Load the bokeh extension
 hv.extension("bokeh")
 
@@ -99,7 +96,7 @@ def get_current_time():
 
 def init_stream_layers():
     """
-    This function initialize the GTFS-RT Stream Layer
+    This function initialize the GTFS-RT Stream Layers
     """
 
     gtfs_hover = HoverTool(
