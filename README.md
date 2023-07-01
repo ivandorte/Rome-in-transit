@@ -52,7 +52,7 @@ Known problems:
 
 1. Loaded my custom Python modules from GitHub:
 
-https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc20993c9cde8e2d/docs/gtfs-rt-rome/app.js#L40-L53
+https://github.com/ivandorte/Rome-in-transit/blob/4171094d2af77bf5c3355a23b8dcd3016749aa5b/docs/gtfs-rt/app.js#L43-L53
 
 2. Loaded protobuf and gtfs-realtime-bindings wheels from a [CDN URL](https://cdn.jsdelivr.net):
 
@@ -66,7 +66,7 @@ https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc2099
 
    - Used XMLHttpRequest (js) to make HTTP requests of binary data;
 
-https://github.com/ivandorte/Rome-in-transit/blob/890b54f0834995e6c024f5dfdc20993c9cde8e2d/modules_pyodide/rome_gtfs_rt.py#L58-L76
+https://github.com/ivandorte/Rome-in-transit/blob/4171094d2af77bf5c3355a23b8dcd3016749aa5b/modules_pyodide/rome_gtfs_rt.py#L62-L77
 
 ## Deployment on HF
 
