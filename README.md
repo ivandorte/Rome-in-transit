@@ -44,7 +44,7 @@ Known problems:
 
 ## Data 
 
-- Public transport data from [Roma Mobilità - Vehicle Positions](https://romamobilita.it/it/tecnologie);
+- Public transport data from [Roma Mobilità](https://romamobilita.it/it/tecnologie);
 
 - Administrative boundaries from [ISTAT (2022)](https://www.istat.it/it/archivio/222527);
 
@@ -74,33 +74,25 @@ Just read this [Medium article](https://towardsdatascience.com/how-to-deploy-a-p
 
 ## References
 
-- https://developers.google.com/transit/gtfs-realtime
+- [GTFS Realtime Overview](https://developers.google.com/transit/gtfs-realtime)
 
-- https://holoviz.org/
+- [Loading custom Python code](https://pyodide.org/en/stable/usage/loading-custom-python-code.html)
 
-- https://hvplot.holoviz.org
+- [How to deploy a Panel app to Hugging Face using Docker](https://towardsdatascience.com/how-to-deploy-a-panel-app-to-hugging-face-using-docker-6189e3789718)
 
-- https://pyodide.org/en/stable/
+- [Converting Panel applications](https://panel.holoviz.org/how_to/wasm/convert.html)
 
-- https://pyodide.org/en/stable/usage/loading-custom-python-code.html
+- [corsproxy.io](https://corsproxy.io/)
 
-- https://towardsdatascience.com/how-to-deploy-a-panel-app-to-hugging-face-using-docker-6189e3789718
+- [Pyodide requests shim: Binary requests are working!](https://bartbroere.eu/2022/04/25/pyodide-requests-binary-works-update/)
 
-- https://panel.holoviz.org/how_to/wasm/convert.html
+- [PyViz Topics Examples](https://examples.pyviz.org/index.html)
 
-- https://corsproxy.io/
+- [Panel Sharing Gallery](https://awesome-panel.org/sharing_gallery)
 
-- https://bartbroere.eu/2022/04/25/pyodide-requests-binary-works-update/
+- [Panel Discourse 4825](https://awesome-panel.org/sharing?app=MarcSkovMadsen%2Fdiscourse-4825-streaming-data)
 
-- https://examples.pyviz.org/index.html
-
-- https://awesome-panel.org/
-
-- https://awesome-panel.org/sharing_gallery
-
-- https://awesome-panel.org/sharing?app=MarcSkovMadsen%2Fdiscourse-4825-streaming-data
-
-- https://github.com/Ileriayo/markdown-badges
+- [Markdown Badges](https://github.com/Ileriayo/markdown-badges)
 
 - Dashboard logo from [Material Symbols - Google](https://fonts.google.com/icons)
 

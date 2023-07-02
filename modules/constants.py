@@ -9,6 +9,11 @@ STOPPED_CL = "#EE7733"
 ON_TIME_CL = "#009988"
 LATE_CL = "#CC3311"
 
+# Points opts
+PT_SIZE = 6
+LN_ALPHA = 0.0
+FILL_ALPHA = 0.6
+
 # Roma mobilità - GTFS-RT vehicle positions feed
 CORS_GTFS_VEHICLE_POS = "https://corsproxy.io/?https://romamobilita.it/sites/default/files/rome_rtgtfs_vehicle_positions_feed.pb"
 

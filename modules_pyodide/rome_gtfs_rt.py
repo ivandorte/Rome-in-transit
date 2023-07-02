@@ -105,44 +105,6 @@ def get_current_status_class(current_status):
     return "Stopped" if current_status == 1 else "In Transit"
 
 
-def get_vehicle_data(url):
-    vehicle_feed = gtfs_realtime_pb2.FeedMessage()
-    try:
-        response = read_feed_xhr(url)
-        vehicle_feed.ParseFromString(response)
-    except Exception as e:
-        # We return an empty DataFrame
-        return VEHICLE_DF_SCHEMA
-
-    positions = []
-    for entity in vehicle_feed.entity:
-        x, y = get_vehicle_position(entity)
-        vehicle_id = entity.vehicle.vehicle.id
-        vehicle_label = entity.vehicle.vehicle.label.strip()
-        trip_id = entity.vehicle.trip.trip_id.strip()
-        start_time = entity.vehicle.trip.start_time
-        last_update = dt.fromtimestamp(entity.vehicle.timestamp).strftime("%H:%M:%S")
-        current_status = entity.vehicle.current_status
-        current_status_class = get_current_status_class(current_status)
-        vehicle_color = get_current_status_color(current_status)
-        positions.append(
-            [
-                x,
-                y,
-                vehicle_id,
-                vehicle_label,
-                trip_id,
-                start_time,
-                last_update,
-                current_status,
-                current_status_class,
-                vehicle_color,
-            ]
-        )
-    data = pd.DataFrame(positions, columns=VEHICLE_DF_COLUMNS)
-    return data
-
-
 def get_delay_color(delay):
     """
     Returns the color of the entity according to the delay class.
@@ -158,14 +120,63 @@ def get_delay_class(delay):
     """
     Returns the delay class (Late or On time).
     """
+
     if delay <= 0:
         return "On time"
     else:
         return "Late"
 
 
+def get_vehicle_data(url):
+    """Reads the vehicle position feed and returns a pandas DataFrame"""
+
+    vehicle_feed = gtfs_realtime_pb2.FeedMessage()
+
+    # TODO: Retry after the exception
+    try:
+        response = read_feed_xhr(url)
+        vehicle_feed.ParseFromString(response)
+    except Exception as e:
+        # We return an empty DataFrame
+        return VEHICLE_DF_SCHEMA
+
+    positions = []
+    for entity in vehicle_feed.entity:
+        # Vehicle attributes
+        x, y = get_vehicle_position(entity)
+        vehicle_id = entity.vehicle.vehicle.id
+        vehicle_label = entity.vehicle.vehicle.label.strip()
+        trip_id = entity.vehicle.trip.trip_id.strip()
+        start_time = entity.vehicle.trip.start_time
+        last_update = dt.fromtimestamp(entity.vehicle.timestamp).strftime("%H:%M:%S")
+        current_status = entity.vehicle.current_status
+        current_status_class = get_current_status_class(current_status)
+        vehicle_color = get_current_status_color(current_status)
+
+        positions.append(
+            [
+                x,
+                y,
+                vehicle_id,
+                vehicle_label,
+                trip_id,
+                start_time,
+                last_update,
+                current_status,
+                current_status_class,
+                vehicle_color,
+            ]
+        )
+
+    data = pd.DataFrame(positions, columns=VEHICLE_DF_COLUMNS)
+    return data
+
+
 def get_delay_data(url):
+    """Reads the trip updates feed and returns a pandas DataFrame"""
     trip_update_feed = gtfs_realtime_pb2.FeedMessage()
+
+    # TODO: Retry after the exception
     try:
         response = read_feed_xhr(url)
         trip_update_feed.ParseFromString(response)

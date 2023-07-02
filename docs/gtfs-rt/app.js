@@ -73,10 +73,13 @@ from holoviews.streams import Pipe
 from constants import (
     ADMIN_BOUNDS,
     DASH_DESC,
+    FILL_ALPHA,
     HEADER_CL,
     IN_TRANSIT_CL,
     LATE_CL,
+    LN_ALPHA,
     ON_TIME_CL,
+    PT_SIZE,
     STOPPED_CL,
 )
 from pyodide.http import open_url
@@ -98,7 +101,7 @@ def get_current_time():
 
 def init_stream_layers():
     """
-    This function initialize the GTFS-RT Stream Layers
+    This function initialize the stream layers
     """
 
     gtfs_hover = HoverTool(
@@ -120,11 +123,25 @@ def init_stream_layers():
         xaxis=None,
         yaxis=None,
         color="statusColor",
-        line_alpha=0.0,
-        fill_alpha=0.6,
-        size=6,
+        line_alpha=LN_ALPHA,
+        fill_alpha=FILL_ALPHA,
+        size=PT_SIZE,
         tools=[gtfs_hover],
     )
+
+    delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    delay_points.opts(
+        frame_width=600,
+        frame_height=650,
+        xaxis=None,
+        yaxis=None,
+        color="delayColor",
+        line_alpha=LN_ALPHA,
+        fill_alpha=FILL_ALPHA,
+        size=PT_SIZE,
+        tools=[gtfs_hover],
+    )
+    return status_points, delay_points
 
     delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
     delay_points.opts(
@@ -160,80 +177,83 @@ def get_admin_bounds():
 
 def update_dashboard():
     """
-    This function updates the Stream Layer and the widgets
+    This function updates the Stream Layers and the number widgets
     """
 
     data = get_data()
     if len(data):
+        # Push the data into dynamic maps
         pipe.send(data)
-        in_transit_numind.value = data["currentStatus"].isin([2]).sum(axis=0)
-        stopped_numind.value = data["currentStatus"].isin([1]).sum(axis=0)
-        fleet_numind.value = in_transit_numind.value + stopped_numind.value
-        last_update.value = get_current_time()
 
-        on_time_numind.value = data["delayClass"].isin(["On time"]).sum(axis=0)
-        late_numind.value = data["delayClass"].isin(["Late"]).sum(axis=0)
+        # Update the widgets
+        in_transit_ind.value = data["currentStatus"].isin([2]).sum(axis=0)
+        stopped_ind.value = data["currentStatus"].isin([1]).sum(axis=0)
+        fleet_ind.value = in_transit_ind.value + stopped_ind.value
+
+        on_time_ind.value = data["delayClass"].isin(["On time"]).sum(axis=0)
+        late_ind.value = data["delayClass"].isin(["Late"]).sum(axis=0)
+
+        latest_update_time.value = get_current_time()
 
 
-# Dashboard description HTML pane
+# Description pane
 desc_pane = pn.pane.HTML(
     DASH_DESC,
     styles={"text-align": "justified"},
     sizing_mode="stretch_width",
 )
 
-# Latest update widget
-last_update = pn.widgets.StaticText(name="Latest Update")
+# Latest update time
+latest_update_time = pn.widgets.StaticText(name="Latest Update")
 
+# TODO: Center the text
 # In transit vehicles
-in_transit_numind = pn.indicators.Number(
+in_transit_ind = pn.indicators.Number(
     value=0,
     name="In Transit",
     title_size="18pt",
     font_size="40pt",
     default_color="white",
-    styles={"background": IN_TRANSIT_CL, "opacity": "0.6"},
+    styles={"background": IN_TRANSIT_CL, "opacity": str(FILL_ALPHA)},
     sizing_mode="stretch_width",
 )
 
 # Stopped vehicles
-stopped_numind = in_transit_numind.clone(
-    name="Stopped", styles={"background": STOPPED_CL}
-)
+stopped_ind = in_transit_ind.clone(name="Stopped", styles={"background": STOPPED_CL})
 
-# Vehicle fleet (In transit + stopped)
-fleet_numind = in_transit_numind.clone(name="Fleet", styles={"background": HEADER_CL})
+# Fleet (in transit + stopped)
+fleet_ind = in_transit_ind.clone(name="Fleet", styles={"background": HEADER_CL})
 
-# On time vehicles
-on_time_numind = in_transit_numind.clone(
-    name="On Time", styles={"background": ON_TIME_CL}
-)
+# Vehicles on schedule
+on_time_ind = in_transit_ind.clone(name="On Time", styles={"background": ON_TIME_CL})
 
-# Late vehicles
-late_numind = in_transit_numind.clone(name="Late", styles={"background": LATE_CL})
+# Vehicles behind schedule
+late_ind = in_transit_ind.clone(name="Late", styles={"background": LATE_CL})
 
-# Inizialize the Stream Layer
+status_indicators = pn.Row(in_transit_ind, stopped_ind, fleet_ind)
+delay_indicators = pn.Row(on_time_ind, late_ind)
+
+# Inizialize the pipe
 pipe = Pipe(FULL_DF_SCHEMA)
-status_points, delay_points = init_stream_layers()
 
-# Administrative boundaries of Rome
-admin_bounds = get_admin_bounds()
+# Inizialize the stream layers
+status_points, delay_points = init_stream_layers()
 
 # CartoLight tiles
 tiles = hv.element.tiles.CartoLight()
 
-# Main map view
+# Administrative boundaries of Rome
+admin_bounds = get_admin_bounds()
+
+# Stream layers
 status_map = tiles * admin_bounds * status_points
 delay_map = tiles * admin_bounds * delay_points
 
-# Initialize the map view
+# Initialize the stream layers and indicators
 update_dashboard()
 
-# Define a PeriodicCallback that updates every 10 seconds with data retrieved from Roma mobilità GTFS-RT feed
+# Define a periodic callback that updates the stream layers and the number widgets every 10 seconds
 callback = pn.state.add_periodic_callback(callback=update_dashboard, period=10000)
-
-status_indicators = pn.Row(in_transit_numind, stopped_numind, fleet_numind)
-delay_indicators = pn.Row(on_time_numind, late_numind)
 
 # Compose the main layout
 layout = pn.Row(
@@ -242,7 +262,7 @@ layout = pn.Row(
         status_indicators,
         pn.Spacer(height=25),
         delay_indicators,
-        last_update,
+        latest_update_time,
         width=400,
     ),
     pn.Tabs(
