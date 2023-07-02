@@ -1,3 +1,8 @@
+from pytz import timezone
+
+# EU/Rome timezone
+EU_ROME_TZ = timezone("Europe/Rome")
+
 # Custom colors
 HEADER_CL = "#2F4F4F"
 

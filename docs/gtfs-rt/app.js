@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['markdown-it-py<3', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', 'holoviews>=1.15.4', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/protobuf-4.23.3-py3-none-any.whl']
+  const env_spec = ['markdown-it-py<3', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', 'holoviews>=1.15.4', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/protobuf-4.23.3-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/pytz-2023.3-py2.py3-none-any.whl']
   for (const pkg of env_spec) {
     console.log(pkg);
     let pkg_name;
@@ -73,6 +73,7 @@ from holoviews.streams import Pipe
 from constants import (
     ADMIN_BOUNDS,
     DASH_DESC,
+    EU_ROME_TZ,
     FILL_ALPHA,
     HEADER_CL,
     IN_TRANSIT_CL,
@@ -84,6 +85,7 @@ from constants import (
 )
 from pyodide.http import open_url
 from rome_gtfs_rt import FULL_DF_SCHEMA, get_data
+from pytz import timezone
 
 # Load the bokeh extension
 hv.extension("bokeh")
@@ -94,9 +96,11 @@ pn.config.sizing_mode = "stretch_both"
 
 def get_current_time():
     """
-    Returns the current date and time.
+    Returns the current date and time (Europe/Rome timezone).
     """
-    return dt.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    rome_now = dt.now(EU_ROME_TZ).strftime("%d/%m/%Y %H:%M:%S")
+    return rome_now
 
 
 def init_stream_layers():

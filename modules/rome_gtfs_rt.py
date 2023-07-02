@@ -8,6 +8,7 @@ from google.transit import gtfs_realtime_pb2
 from modules.constants import (
     CORS_GTFS_TRIP_UPDATES,
     CORS_GTFS_VEHICLE_POS,
+    EU_ROME_TZ,
     IN_TRANSIT_CL,
     LATE_CL,
     ON_TIME_CL,
@@ -52,7 +53,7 @@ def build_url():
     Get the current local time and build the request url
     """
 
-    time = dt.now().strftime("%H:%M:%S")
+    time = dt.now(EU_ROME_TZ).strftime("%H:%M:%S")
     vehicle_url = CORS_GTFS_VEHICLE_POS + f"?cacheBust={time}"
     trip_url = CORS_GTFS_TRIP_UPDATES + f"?cacheBust={time}"
 
@@ -130,7 +131,9 @@ def get_vehicle_data(url):
         vehicle_label = entity.vehicle.vehicle.label.strip()
         trip_id = entity.vehicle.trip.trip_id.strip()
         start_time = entity.vehicle.trip.start_time
-        last_update = dt.fromtimestamp(entity.vehicle.timestamp).strftime("%H:%M:%S")
+        last_update = dt.fromtimestamp(
+            entity.vehicle.timestamp, tz=EU_ROME_TZ
+        ).strftime("%H:%M:%S")
         current_status = entity.vehicle.current_status
         current_status_class = get_current_status_class(current_status)
         vehicle_color = get_current_status_color(current_status)

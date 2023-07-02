@@ -9,6 +9,7 @@ from holoviews.streams import Pipe
 from modules.constants import (
     ADMIN_BOUNDS,
     DASH_DESC,
+    EU_ROME_TZ,
     FILL_ALPHA,
     HEADER_CL,
     IN_TRANSIT_CL,
@@ -29,9 +30,11 @@ pn.config.sizing_mode = "stretch_both"
 
 def get_current_time():
     """
-    Returns the current date and time.
+    Returns the current date and time (Europe/Rome timezone).
     """
-    return dt.now().strftime("%d/%m/%Y %H:%M:%S")
+
+    rome_now = dt.now(EU_ROME_TZ).strftime("%d/%m/%Y %H:%M:%S")
+    return rome_now
 
 
 def init_stream_layers():
