@@ -30,6 +30,11 @@ Five number indicators showing:
 
 - The number of vehicles on time or behind schedule;
 
+## ToDo
+
+- [ ] Add alerts feed;
+- [ ] Add routes, stops, etc...;
+
 ## Deployed on
 
 HF: https://huggingface.co/spaces/ivn888/Rome-in-transit

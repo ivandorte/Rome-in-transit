@@ -38,7 +38,7 @@ DASH_DESC = f"""
             City of Rome Capital.
         </p>
         <p>
-            The <b>stream layer</b> automatically updates every 10 seconds
+            The <b>stream layers</b> automatically updates every 10 seconds
             with new data retrieved from the <a href="https://developers.google.com/transit/gtfs-realtime" target="_blank">GTFS-RealTime feed</a>
             provided and mantained by <a href="https://romamobilita.it/it/tecnologie" target="_blank">Roma Mobilità</a>.
         </p>
