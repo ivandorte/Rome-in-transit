@@ -17,7 +17,6 @@ async function startApplication() {
   await self.pyodide.loadPackage("micropip");
   const env_spec = ['markdown-it-py<3', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/bokeh-3.1.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.1.0/dist/wheels/panel-1.1.0-py3-none-any.whl', 'pyodide-http==0.2.1', 'holoviews>=1.15.4', 'holoviews', 'numpy', 'requests',  'pandas', 'pyproj', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/gtfs_realtime_bindings-1.0.0-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/protobuf-4.23.3-py3-none-any.whl', 'https://cdn.jsdelivr.net/gh/ivandorte/Rome-in-transit@main/wheels/pytz-2023.3-py2.py3-none-any.whl']
   for (const pkg of env_spec) {
-    console.log(pkg);
     let pkg_name;
     if (pkg.endsWith('.whl')) {
       pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
@@ -40,7 +39,7 @@ async function startApplication() {
   }
 
   // Load custom Python modules
-  const custom_modules = ['https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/constants.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/rome_gtfs_rt.py']
+  const custom_modules = ['https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/colors.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/constants.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/indicators.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/rome_gtfs_rt.py', 'https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/modules_pyodide/time_utils.py']
   for (const module of custom_modules) {
     let module_name;
     module_name = module.split('/').slice(-1)[0]
@@ -51,7 +50,7 @@ async function startApplication() {
             f.write(await module_pyodide.bytes())
       `);
   }
-  
+
   console.log("Packages loaded!");
   self.postMessage({type: 'status', msg: 'Executing code'})
   const code = `
@@ -62,45 +61,34 @@ from panel.io.pyodide import init_doc, write_doc
 
 init_doc()
 
-from datetime import datetime as dt
-
 import json
 import holoviews as hv
 import numpy as np
 import panel as pn
+import requests
 from bokeh.models import HoverTool
 from holoviews.streams import Pipe
-from constants import (
-    ADMIN_BOUNDS,
-    DASH_DESC,
-    EU_ROME_TZ,
-    FILL_ALPHA,
-    HEADER_CL,
-    IN_TRANSIT_CL,
-    LATE_CL,
-    LN_ALPHA,
-    ON_TIME_CL,
-    PT_SIZE,
-    STOPPED_CL,
+from colors import HEADER_CL
+from constants import ADMIN_BOUNDS, DASH_DESC
+from indicators import (
+    FLEET_IND,
+    IN_TRANSIT_IND,
+    LATE_IND,
+    ON_TIME_IND,
+    STOPPED_IND,
 )
-from pyodide.http import open_url
 from rome_gtfs_rt import FULL_DF_SCHEMA, get_data
-from pytz import timezone
+from time_utils import get_current_time
+from pyodide.http import open_url
 
 # Load the bokeh extension
 hv.extension("bokeh")
 
+# Disable webgl: https://github.com/holoviz/panel/issues/4855
+hv.renderer("bokeh").webgl = False  # Disable Webgl
+
 # Set the sizing mode
 pn.config.sizing_mode = "stretch_both"
-
-
-def get_current_time():
-    """
-    Returns the current date and time (Europe/Rome timezone).
-    """
-
-    rome_now = dt.now(EU_ROME_TZ).strftime("%d/%m/%Y %H:%M:%S")
-    return rome_now
 
 
 def init_stream_layers():
@@ -127,25 +115,11 @@ def init_stream_layers():
         xaxis=None,
         yaxis=None,
         color="statusColor",
-        line_alpha=LN_ALPHA,
-        fill_alpha=FILL_ALPHA,
-        size=PT_SIZE,
+        line_alpha=0.0,
+        fill_alpha=0.6,
+        size=6,
         tools=[gtfs_hover],
     )
-
-    delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
-    delay_points.opts(
-        frame_width=600,
-        frame_height=650,
-        xaxis=None,
-        yaxis=None,
-        color="delayColor",
-        line_alpha=LN_ALPHA,
-        fill_alpha=FILL_ALPHA,
-        size=PT_SIZE,
-        tools=[gtfs_hover],
-    )
-    return status_points, delay_points
 
     delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
     delay_points.opts(
@@ -184,18 +158,20 @@ def update_dashboard():
     This function updates the Stream Layers and the number widgets
     """
 
-    data = get_data()
+    curr_time = get_current_time()
+    cache_bust = curr_time.split()[-1]
+    data = get_data(cache_bust)
     if len(data):
         # Push the data into dynamic maps
         pipe.send(data)
 
         # Update the widgets
-        in_transit_ind.value = data["currentStatus"].isin([2]).sum(axis=0)
-        stopped_ind.value = data["currentStatus"].isin([1]).sum(axis=0)
-        fleet_ind.value = in_transit_ind.value + stopped_ind.value
+        IN_TRANSIT_IND.value = data["currentStatus"].isin([2]).sum(axis=0)
+        STOPPED_IND.value = data["currentStatus"].isin([1]).sum(axis=0)
+        FLEET_IND.value = IN_TRANSIT_IND.value + STOPPED_IND.value
 
-        on_time_ind.value = data["delayClass"].isin(["On time"]).sum(axis=0)
-        late_ind.value = data["delayClass"].isin(["Late"]).sum(axis=0)
+        ON_TIME_IND.value = data["delayClass"].isin(["On time"]).sum(axis=0)
+        LATE_IND.value = data["delayClass"].isin(["Late"]).sum(axis=0)
 
         latest_update_time.value = get_current_time()
 
@@ -210,32 +186,8 @@ desc_pane = pn.pane.HTML(
 # Latest update time
 latest_update_time = pn.widgets.StaticText(name="Latest Update")
 
-# TODO: Center the text
-# In transit vehicles
-in_transit_ind = pn.indicators.Number(
-    value=0,
-    name="In Transit",
-    title_size="18pt",
-    font_size="40pt",
-    default_color="white",
-    styles={"background": IN_TRANSIT_CL, "opacity": str(FILL_ALPHA)},
-    sizing_mode="stretch_width",
-)
-
-# Stopped vehicles
-stopped_ind = in_transit_ind.clone(name="Stopped", styles={"background": STOPPED_CL})
-
-# Fleet (in transit + stopped)
-fleet_ind = in_transit_ind.clone(name="Fleet", styles={"background": HEADER_CL})
-
-# Vehicles on schedule
-on_time_ind = in_transit_ind.clone(name="On Time", styles={"background": ON_TIME_CL})
-
-# Vehicles behind schedule
-late_ind = in_transit_ind.clone(name="Late", styles={"background": LATE_CL})
-
-status_indicators = pn.Row(in_transit_ind, stopped_ind, fleet_ind)
-delay_indicators = pn.Row(on_time_ind, late_ind)
+status_indicators = pn.Row(IN_TRANSIT_IND, STOPPED_IND, FLEET_IND)
+delay_indicators = pn.Row(ON_TIME_IND, LATE_IND)
 
 # Inizialize the pipe
 pipe = Pipe(FULL_DF_SCHEMA)

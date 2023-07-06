@@ -1,0 +1,3 @@
+tests/
+to_pyodide/
+modules/__pycache__

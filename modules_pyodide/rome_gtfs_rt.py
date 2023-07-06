@@ -1,27 +1,16 @@
-from datetime import datetime as dt
-
 import pandas as pd
-
-# import requests
-from constants import (
-    CORS_GTFS_TRIP_UPDATES,
-    CORS_GTFS_VEHICLE_POS,
-    EU_ROME_TZ,
-    IN_TRANSIT_CL,
-    LATE_CL,
-    ON_TIME_CL,
-    STOPPED_CL,
-)
+from colors import IN_TRANSIT_CL, LATE_CL, ON_TIME_CL, STOPPED_CL
+from constants import CORS_GTFS_TRIP_UPDATES, CORS_GTFS_VEHICLE_POS
 from google.transit import gtfs_realtime_pb2
 from js import XMLHttpRequest
 from pyproj import Transformer
+from time_utils import timestamp_to_hms
 
 # Vehicle Dataframe schema
 VEHICLE_DF_COLUMNS = [
     "x",
     "y",
     "vehicleID",
-    "label",
     "tripID",
     "startTime",
     "lastUpdate",
@@ -48,14 +37,13 @@ FULL_DF_SCHEMA = VEHICLE_DF_SCHEMA.merge(DELAY_DF_SCHEMA, on="tripID")
 transformer = Transformer.from_crs(4326, 3857, always_xy=True)
 
 
-def build_url():
+def build_url(cache_bust):
     """
     Get the current local time and build the request url
     """
 
-    time = dt.now(EU_ROME_TZ).strftime("%H:%M:%S")
-    vehicle_url = CORS_GTFS_VEHICLE_POS + f"?cacheBust={time}"
-    trip_url = CORS_GTFS_TRIP_UPDATES + f"?cacheBust={time}"
+    vehicle_url = CORS_GTFS_VEHICLE_POS + f"?cacheBust={cache_bust}"
+    trip_url = CORS_GTFS_TRIP_UPDATES + f"?cacheBust={cache_bust}"
 
     return (vehicle_url, trip_url)
 
@@ -146,12 +134,9 @@ def get_vehicle_data(url):
         # Vehicle attributes
         x, y = get_vehicle_position(entity)
         vehicle_id = entity.vehicle.vehicle.id
-        vehicle_label = entity.vehicle.vehicle.label.strip()
         trip_id = entity.vehicle.trip.trip_id.strip()
         start_time = entity.vehicle.trip.start_time
-        last_update = dt.fromtimestamp(
-            entity.vehicle.timestamp, tz=EU_ROME_TZ
-        ).strftime("%H:%M:%S")
+        last_update = timestamp_to_hms(entity.vehicle.timestamp)
         current_status = entity.vehicle.current_status
         current_status_class = get_current_status_class(current_status)
         vehicle_color = get_current_status_color(current_status)
@@ -161,7 +146,6 @@ def get_vehicle_data(url):
                 x,
                 y,
                 vehicle_id,
-                vehicle_label,
                 trip_id,
                 start_time,
                 last_update,
@@ -199,13 +183,13 @@ def get_delay_data(url):
     return data
 
 
-def get_data():
+def get_data(cache_bust):
     """
     This function reads the Roma mobilità GTFS-RT feed
     and returns a pandas DataFrame.
     """
 
-    vehicle_url, trip_url = build_url()
+    vehicle_url, trip_url = build_url(cache_bust)
     vehicle_data = get_vehicle_data(vehicle_url)
     delay_data = get_delay_data(trip_url)
 
