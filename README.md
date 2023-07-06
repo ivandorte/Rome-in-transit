@@ -20,7 +20,7 @@ Two stream layers (maps):
    - $\textcolor{#009988}{\rm \textbf{On\ time}}$
    - $\textcolor{#CC3311}{\rm \textbf{Late}}$
 
-N.B.: In the hover tooltip the value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
+N.B.: The value of the delay field (in minutes) will be zero if the vehicle is on time (A), negative if ahead of schedule (B) or positive if late (C).
 
 ![img](https://raw.githubusercontent.com/ivandorte/Rome-in-transit/main/assets/delay.png)
 
@@ -57,7 +57,7 @@ Known problems:
 
 1. Loaded my custom Python modules from GitHub:
 
-https://github.com/ivandorte/Rome-in-transit/blob/4171094d2af77bf5c3355a23b8dcd3016749aa5b/docs/gtfs-rt/app.js#L43-L53
+https://github.com/ivandorte/Rome-in-transit/blob/52a790cecf2663c0289b3e54664a57c1ba3985c1/docs/gtfs-rt/app.js#L42-L52
 
 2. Loaded protobuf and gtfs-realtime-bindings wheels from a [CDN URL](https://cdn.jsdelivr.net):
 
@@ -71,7 +71,7 @@ https://github.com/ivandorte/Rome-in-transit/blob/4171094d2af77bf5c3355a23b8dcd3
 
    - Used XMLHttpRequest (js) to make HTTP requests of binary data;
 
-https://github.com/ivandorte/Rome-in-transit/blob/4171094d2af77bf5c3355a23b8dcd3016749aa5b/modules_pyodide/rome_gtfs_rt.py#L62-L77
+https://github.com/ivandorte/Rome-in-transit/blob/52a790cecf2663c0289b3e54664a57c1ba3985c1/modules_pyodide/rome_gtfs_rt.py#L51-L66
 
 ## Deployment on HF
 
