@@ -8,6 +8,10 @@
 
 This dashboard displays the near real-time position of any bus, tram, or train (ATAC and Roma TPL operators) within the Metropolitan City of Rome Capital. The stream layers automatically updates every 10 seconds through a **periodic callback** with new data retrieved from the GTFS-RealTime ([Overview](https://developers.google.com/transit/gtfs-realtime)) feed provided and mantained by Roma Mobilità ([website](https://romamobilita.it/))
 
+Hugging Face: https://huggingface.co/spaces/ivn888/Rome-in-transit
+
+GitHub Pages: https://ivandorte.github.io/Rome-in-transit/gtfs-rt/app.html
+
 ## Components
 
 Two stream layers (maps):
@@ -30,28 +34,22 @@ Five number indicators showing:
 
 - The number of vehicles on time or behind schedule;
 
-## ToDo
-
-- [ ] Add alerts feed;
-- [ ] Add routes, stops, etc...;
-
-## Deployed on
-
-HF: https://huggingface.co/spaces/ivn888/Rome-in-transit
-
-GitHub Pages: https://ivandorte.github.io/Rome-in-transit/gtfs-rt/app.html
-
-Known problems:
-
-- If you view a blank page in HF restart the Space;
-
-- The peridic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
-
 ## Data 
 
 - Public transport data from [Roma Mobilità](https://romamobilita.it/it/tecnologie);
 
 - Administrative boundaries from [ISTAT (2022)](https://www.istat.it/it/archivio/222527);
+
+## ToDo
+
+- [ ] Add alerts feed;
+- [ ] Add routes, stops, etc...;
+
+## Known problems:
+
+- If you view a blank page in HF restart the Space;
+
+- The peridic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
 
 ## Deployment on GitHub pages
 
