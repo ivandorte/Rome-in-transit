@@ -43,7 +43,7 @@ def init_stream_layers():
         ]
     )
 
-    status_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    status_points = hv.DynamicMap(hv.Points, streams=[gtfs_pipe])
     status_points.opts(
         frame_width=600,
         frame_height=650,
@@ -56,7 +56,7 @@ def init_stream_layers():
         tools=[gtfs_hover],
     )
 
-    delay_points = hv.DynamicMap(hv.Points, streams=[pipe])
+    delay_points = hv.DynamicMap(hv.Points, streams=[gtfs_pipe])
     delay_points.opts(
         frame_width=600,
         frame_height=650,
@@ -97,7 +97,7 @@ def update_dashboard():
     data = get_data(cache_bust)
     if len(data):
         # Push the data into dynamic maps
-        pipe.send(data)
+        gtfs_pipe.send(data)
 
         # Update the widgets
         IN_TRANSIT_IND.value = data["currentStatus"].isin([2]).sum(axis=0)
@@ -108,6 +108,10 @@ def update_dashboard():
         LATE_IND.value = data["delayClass"].isin(["Late"]).sum(axis=0)
 
         latest_update_time.value = get_current_time()
+        alert_pane.visible = False
+    else:
+        latest_update_time.value = get_current_time()
+        alert_pane.visible = True
 
 
 # Description pane
@@ -120,11 +124,16 @@ desc_pane = pn.pane.HTML(
 # Latest update time
 latest_update_time = pn.widgets.StaticText(name="Latest Update")
 
+# Indicators
 status_indicators = pn.Row(IN_TRANSIT_IND, STOPPED_IND, FLEET_IND)
 delay_indicators = pn.Row(ON_TIME_IND, LATE_IND)
 
+# Alert pane
+alert_pane = pn.pane.Alert("No data received from Roma mobilità!", alert_type="danger")
+alert_pane.visible = False
+
 # Inizialize the pipe
-pipe = Pipe(FULL_DF_SCHEMA)
+gtfs_pipe = Pipe(FULL_DF_SCHEMA)
 
 # Inizialize the stream layers
 status_points, delay_points = init_stream_layers()
@@ -152,6 +161,8 @@ layout = pn.Row(
         status_indicators,
         pn.Spacer(height=25),
         delay_indicators,
+        alert_pane,
+        pn.Spacer(height=5),
         latest_update_time,
         width=400,
     ),

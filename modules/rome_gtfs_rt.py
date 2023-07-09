@@ -6,7 +6,7 @@ from modules.constants import CORS_GTFS_TRIP_UPDATES, CORS_GTFS_VEHICLE_POS
 from modules.time_utils import timestamp_to_hms
 from pyproj import Transformer
 
-# Vehicle Dataframe schema
+# Vehicle Dataframe columns
 VEHICLE_DF_COLUMNS = [
     "x",
     "y",
@@ -19,15 +19,15 @@ VEHICLE_DF_COLUMNS = [
     "statusColor",
 ]
 
-VEHICLE_DF_SCHEMA = pd.DataFrame([], columns=VEHICLE_DF_COLUMNS)
-
-# Delay Dataframe schema
+# Delay Dataframe columns
 DELAY_DF_COLUMNS = [
     "tripID",
     "delay",
     "delayClass",
     "delayColor",
 ]
+
+VEHICLE_DF_SCHEMA = pd.DataFrame([], columns=VEHICLE_DF_COLUMNS)
 
 DELAY_DF_SCHEMA = pd.DataFrame([], columns=DELAY_DF_COLUMNS)
 
@@ -103,16 +103,15 @@ def get_vehicle_data(url):
 
     vehicle_feed = gtfs_realtime_pb2.FeedMessage()
 
-    # TODO: Retry after the exception
-    try:
-        response = requests.get(url).content
-        vehicle_feed.ParseFromString(response)
-    except Exception as e:
-        # We return an empty DataFrame
-        return VEHICLE_DF_SCHEMA
+    # TODO: Retry at least 5 times if the response is empty
+    response = requests.get(url).content
+    vehicle_feed.ParseFromString(response)
+
+    # Entities
+    vehicle_entities = vehicle_feed.entity
 
     positions = []
-    for entity in vehicle_feed.entity:
+    for entity in vehicle_entities:
         # Vehicle attributes
         x, y = get_vehicle_position(entity)
         vehicle_id = entity.vehicle.vehicle.id
@@ -143,18 +142,18 @@ def get_vehicle_data(url):
 
 def get_delay_data(url):
     """Reads the trip updates feed and returns a pandas DataFrame"""
+
     trip_update_feed = gtfs_realtime_pb2.FeedMessage()
 
-    # TODO: Retry after the exception
-    try:
-        response = requests.get(url).content
-        trip_update_feed.ParseFromString(response)
-    except Exception as e:
-        # We return an empty DataFrame
-        return DELAY_DF_SCHEMA
+    # TODO: Retry at least 5 times if the response is empty
+    response = requests.get(url).content
+    trip_update_feed.ParseFromString(response)
+
+    # Entities
+    trip_update_entities = trip_update_feed.entity
 
     delays = []
-    for entity in trip_update_feed.entity:
+    for entity in trip_update_entities:
         trip_id = entity.trip_update.trip.trip_id.strip()
         current_stop_arrival = entity.trip_update.stop_time_update[0].arrival
         current_stop_delay = current_stop_arrival.delay / 60
