@@ -129,7 +129,7 @@ status_indicators = pn.Row(IN_TRANSIT_IND, STOPPED_IND, FLEET_IND)
 delay_indicators = pn.Row(ON_TIME_IND, LATE_IND)
 
 # Alert pane
-alert_pane = pn.pane.Alert("No data received from Roma mobilità!", alert_type="danger")
+alert_pane = pn.pane.Alert("😿No data received from Roma mobilità!", alert_type="danger")
 alert_pane.visible = False
 
 # Inizialize the pipe
@@ -159,11 +159,12 @@ layout = pn.Row(
     pn.Column(
         desc_pane,
         status_indicators,
-        pn.Spacer(height=25),
+        pn.Spacer(height=5),
         delay_indicators,
-        alert_pane,
         pn.Spacer(height=5),
         latest_update_time,
+        pn.Spacer(height=10),
+        alert_pane,
         width=400,
     ),
     pn.Tabs(

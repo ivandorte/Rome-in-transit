@@ -225,11 +225,12 @@ layout = pn.Row(
     pn.Column(
         desc_pane,
         status_indicators,
-        pn.Spacer(height=25),
+        pn.Spacer(height=5),
         delay_indicators,
-        alert_pane,
         pn.Spacer(height=5),
         latest_update_time,
+        pn.Spacer(height=10),
+        alert_pane,
         width=400,
     ),
     pn.Tabs(
