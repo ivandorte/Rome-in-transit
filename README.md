@@ -20,7 +20,8 @@ Two stream layers (maps):
    - $\textcolor{#0077BB}{\rm \textbf{In\ transit}}$ 
    - $\textcolor{#EE7733}{\rm \textbf{Stopped}}$
 
-2. The "Delays map" displays whether a vehicle is on time (ahead + on time) or behind schedule (late):
+2. The "Delays map" displays whether a vehicle is on time (ahead + on time) or behind schedule (late)
+3. :
    - $\textcolor{#009988}{\rm \textbf{On\ time}}$
    - $\textcolor{#CC3311}{\rm \textbf{Late}}$
 
@@ -49,7 +50,7 @@ Five number indicators showing:
 
 - If you view a blank page in HF restart the Space;
 
-- The peridic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
+- The periodic callback may suddenly stop working (I don't know why) and the data will not be updated, simply refresh the application page;
 
 ## Deployment on GitHub pages
 
